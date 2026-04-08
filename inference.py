@@ -1,17 +1,10 @@
-"""
-inference.py — Runs an LLM agent through all 3 tasks of code-review-env.
-Emits structured stdout logs in the required OpenEnv format.
-"""
+"""inference.py — Runs an LLM agent through all 3 tasks of code-review-env."""
 import os
 import json
 import time
 import requests
-from dotenv import load_dotenv
-from openai import OpenAI
 
-load_dotenv()
-
-# Validator injects these — MUST use os.environ (no fallback)
+# Validator injects these — MUST use os.environ
 API_BASE_URL = os.environ["API_BASE_URL"]
 API_KEY = os.environ["API_KEY"]
 MODEL_NAME = os.getenv("MODEL_NAME", "mistralai/Mistral-7B-Instruct-v0.2")
@@ -38,11 +31,24 @@ Respond ONLY with a valid JSON object in this exact format:
 Do not include any text outside the JSON object."""
 
 
-def get_client() -> OpenAI:
-    print(f"[DEBUG] BASE_URL={API_BASE_URL}", flush=True)
-    print(f"[DEBUG] API_KEY_EXISTS={API_KEY is not None}", flush=True)
-    print(f"[DEBUG] MODEL={MODEL_NAME}", flush=True)
-    return OpenAI(base_url=API_BASE_URL, api_key=API_KEY)
+def call_llm(messages: list) -> str:
+    """Call LLM proxy directly via requests — avoids OpenAI SDK URL issues."""
+    url = API_BASE_URL.rstrip("/") + "/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {API_KEY}",
+        "Content-Type": "application/json",
+    }
+    payload = {
+        "model": MODEL_NAME,
+        "messages": messages,
+        "temperature": 0.1,
+        "max_tokens": 2048,
+    }
+    print(f"[DEBUG] LLM request to: {url}", flush=True)
+    resp = requests.post(url, headers=headers, json=payload, timeout=60)
+    resp.raise_for_status()
+    data = resp.json()
+    return data["choices"][0]["message"]["content"].strip()
 
 
 def call_env(method: str, path: str, payload: dict = None) -> dict:
@@ -87,38 +93,24 @@ def run_task(task_name: str) -> dict:
         print(f"[END] success=false steps=0 score=0.00 rewards= error={err}", flush=True)
         return {"task": task_name, "success": False, "steps": 0, "score": 0.0, "rewards": []}
 
-    try:
-        client = get_client()
-    except Exception as e:
-        err = str(e)[:120]
-        print(f"[END] success=false steps=0 score=0.00 rewards= error={err}", flush=True)
-        return {"task": task_name, "success": False, "steps": 0, "score": 0.0, "rewards": []}
-
     for step_num in range(1, MAX_STEPS + 1):
         user_prompt = build_user_prompt(obs)
         error_msg = "null"
+        action_data = {"issues": []}
+        action_str = "{}"
 
         try:
-            response = client.chat.completions.create(
-                model=MODEL_NAME,
-                messages=[
-                    {"role": "system", "content": SYSTEM_PROMPT},
-                    {"role": "user", "content": user_prompt},
-                ],
-                temperature=0.1,
-                max_tokens=2048,
-            )
-            raw_content = response.choices[0].message.content.strip()
+            raw_content = call_llm([
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": user_prompt},
+            ])
             action_data = json.loads(raw_content)
             action_str = json.dumps(action_data, separators=(",", ":"))
         except json.JSONDecodeError as e:
-            action_data = {"issues": []}
-            action_str = "{}"
             error_msg = f"JSON parse error: {str(e)[:80]}"
         except Exception as e:
-            action_data = {"issues": []}
-            action_str = "{}"
             error_msg = str(e)[:80]
+            print(f"[DEBUG] LLM call failed: {error_msg}", flush=True)
 
         try:
             step_result = call_env("POST", "/step", action_data)
@@ -161,25 +153,23 @@ def run_task(task_name: str) -> dict:
 
 
 def main():
-    try:
-        results = []
-        for task in TASKS:
-            result = run_task(task)
-            results.append(result)
-            time.sleep(1)
+    print(f"[DEBUG] API_BASE_URL={API_BASE_URL}", flush=True)
+    print(f"[DEBUG] MODEL={MODEL_NAME}", flush=True)
 
-        avg_score = sum(r["score"] for r in results) / len(results)
-        print(f"\n=== FINAL SUMMARY ===", flush=True)
-        for r in results:
-            print(
-                f"  {r['task']}: score={r['score']:.2f} steps={r['steps']} success={r['success']}",
-                flush=True,
-            )
-        print(f"  average_score={avg_score:.2f}", flush=True)
+    results = []
+    for task in TASKS:
+        result = run_task(task)
+        results.append(result)
+        time.sleep(1)
 
-    except Exception as e:
-        print(f"[FATAL] Unhandled exception: {e}", flush=True)
-        raise
+    avg_score = sum(r["score"] for r in results) / len(results)
+    print(f"\n=== FINAL SUMMARY ===", flush=True)
+    for r in results:
+        print(
+            f"  {r['task']}: score={r['score']:.2f} steps={r['steps']} success={r['success']}",
+            flush=True,
+        )
+    print(f"  average_score={avg_score:.2f}", flush=True)
 
 
 if __name__ == "__main__":
