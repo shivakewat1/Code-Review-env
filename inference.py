@@ -78,11 +78,16 @@ Code to review:
     return prompt
 
 
+def clamp(score: float) -> float:
+    """Ensure score is strictly between 0 and 1."""
+    return max(0.01, min(0.99, score))
+
+
 def run_task(task_name: str) -> dict:
     print(f"[START] task={task_name} env=code-review-env model={MODEL_NAME}", flush=True)
 
     all_rewards = []
-    final_score = 0.0
+    final_score = 0.01
     total_steps = 0
     success = False
 
@@ -90,8 +95,8 @@ def run_task(task_name: str) -> dict:
         obs = call_env("POST", f"/reset?task={task_name}")
     except Exception as e:
         err = str(e)[:120]
-        print(f"[END] success=false steps=0 score=0.00 rewards= error={err}", flush=True)
-        return {"task": task_name, "success": False, "steps": 0, "score": 0.0, "rewards": []}
+        print(f"[END] success=false steps=0 score=0.01 rewards=0.01 error={err}", flush=True)
+        return {"task": task_name, "success": False, "steps": 0, "score": 0.01, "rewards": [0.01]}
 
     for step_num in range(1, MAX_STEPS + 1):
         user_prompt = build_user_prompt(obs)
@@ -114,12 +119,11 @@ def run_task(task_name: str) -> dict:
 
         try:
             step_result = call_env("POST", "/step", action_data)
-            reward = step_result["reward"]["score"]
-            reward = max(0.001, min(0.999, reward))  # strictly (0, 1)
+            reward = clamp(step_result["reward"]["score"])
             done = step_result["done"]
             obs = step_result["observation"]
         except Exception as e:
-            reward = 0.001  # never 0.0
+            reward = 0.01
             done = True
             error_msg = str(e)[:80]
 
@@ -138,6 +142,7 @@ def run_task(task_name: str) -> dict:
             break
 
     rewards_str = ",".join(f"{r:.2f}" for r in all_rewards)
+    final_score = clamp(final_score)
     print(
         f"[END] success={str(success).lower()} steps={total_steps} "
         f"score={final_score:.2f} rewards={rewards_str}",
