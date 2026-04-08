@@ -24,7 +24,7 @@ class Observation(BaseModel):
 
 
 class Reward(BaseModel):
-    score: float = Field(gt=0.0, lt=1.0)
+    score: float = Field(ge=0.001, le=0.999)
     breakdown: Dict[str, Any]
     feedback: str
 
