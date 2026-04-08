@@ -79,7 +79,7 @@ def grade_bug(action: Action, task: Dict) -> Reward:
     hallucination_penalty = min(hallucinated * 0.1, 0.3)
 
     raw_score = (line_score + explanation_score + fix_score) * recall - hallucination_penalty
-    score = max(0.0, min(1.0, raw_score))
+    score = max(0.001, min(0.999, raw_score))
 
     breakdown = {
         "known_bugs": total_bugs,

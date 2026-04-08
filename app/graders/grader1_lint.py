@@ -83,7 +83,7 @@ def grade_lint(action: Action, task: Dict) -> Reward:
     hallucination_penalty = min(hallucinated * 0.05, 0.2)
 
     raw_score = f1 * 0.9 + suggestion_bonus - hallucination_penalty
-    score = max(0.0, min(1.0, raw_score))
+    score = max(0.001, min(0.999, raw_score))
 
     breakdown = {
         "precision": round(precision, 3),

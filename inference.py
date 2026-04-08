@@ -115,10 +115,11 @@ def run_task(task_name: str) -> dict:
         try:
             step_result = call_env("POST", "/step", action_data)
             reward = step_result["reward"]["score"]
+            reward = max(0.001, min(0.999, reward))  # strictly (0, 1)
             done = step_result["done"]
             obs = step_result["observation"]
         except Exception as e:
-            reward = 0.0
+            reward = 0.001  # never 0.0
             done = True
             error_msg = str(e)[:80]
 
