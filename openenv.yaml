@@ -1,0 +1,13 @@
+name: code-review-env
+version: "1.0.0"
+description: "RL environment for training AI agents to perform code review"
+tasks:
+  - name: lint-fix
+    difficulty: easy
+  - name: bug-detect
+    difficulty: medium
+  - name: security-audit
+    difficulty: hard
+observation_space: "Structured Python code with task description"
+action_space: "List of identified issues with line numbers, types, and suggestions"
+reward_range: [0.0, 1.0]
