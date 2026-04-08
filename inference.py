@@ -11,9 +11,10 @@ from openai import OpenAI
 
 load_dotenv()
 
-API_BASE_URL = os.getenv("API_BASE_URL", "https://api-inference.huggingface.co/v1")
+# Validator injects these — MUST use os.environ (no fallback)
+API_BASE_URL = os.environ["API_BASE_URL"]
+API_KEY = os.environ["API_KEY"]
 MODEL_NAME = os.getenv("MODEL_NAME", "mistralai/Mistral-7B-Instruct-v0.2")
-HF_TOKEN = os.getenv("HF_TOKEN")
 ENV_BASE_URL = os.getenv("ENV_BASE_URL", "http://localhost:7860")
 
 MAX_STEPS = 8
@@ -38,22 +39,10 @@ Do not include any text outside the JSON object."""
 
 
 def get_client() -> OpenAI:
-    """Create OpenAI-compatible client with full validation."""
-    try:
-        print(f"[DEBUG] BASE_URL={API_BASE_URL}", flush=True)
-        print(f"[DEBUG] TOKEN_EXISTS={HF_TOKEN is not None}", flush=True)
-        print(f"[DEBUG] MODEL={MODEL_NAME}", flush=True)
-
-        if not API_BASE_URL:
-            raise ValueError("API_BASE_URL is missing")
-        if not HF_TOKEN:
-            raise ValueError("HF_TOKEN is missing — set it as an environment variable")
-
-        return OpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN)
-
-    except Exception as e:
-        print(f"[ERROR] Failed to create OpenAI client: {e}", flush=True)
-        raise
+    print(f"[DEBUG] BASE_URL={API_BASE_URL}", flush=True)
+    print(f"[DEBUG] API_KEY_EXISTS={API_KEY is not None}", flush=True)
+    print(f"[DEBUG] MODEL={MODEL_NAME}", flush=True)
+    return OpenAI(base_url=API_BASE_URL, api_key=API_KEY)
 
 
 def call_env(method: str, path: str, payload: dict = None) -> dict:
@@ -91,7 +80,6 @@ def run_task(task_name: str) -> dict:
     total_steps = 0
     success = False
 
-    # Reset env
     try:
         obs = call_env("POST", f"/reset?task={task_name}")
     except Exception as e:
@@ -99,7 +87,6 @@ def run_task(task_name: str) -> dict:
         print(f"[END] success=false steps=0 score=0.00 rewards= error={err}", flush=True)
         return {"task": task_name, "success": False, "steps": 0, "score": 0.0, "rewards": []}
 
-    # Init client — safe, per-task
     try:
         client = get_client()
     except Exception as e:
