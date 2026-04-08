@@ -3,6 +3,10 @@ name = "code-review-env"
 version = "1.0.0"
 description = "OpenEnv-compliant RL environment for AI code review agents"
 requires-python = ">=3.11"
+dependencies = ["openenv-core>=0.2.0", "fastapi", "uvicorn", "pydantic", "requests"]
+
+[project.scripts]
+server = "app.main:app"
 
 [tool.openenv]
 name = "code-review-env"
