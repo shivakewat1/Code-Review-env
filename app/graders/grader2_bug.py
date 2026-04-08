@@ -105,7 +105,7 @@ def grade_bug(action: Action, task: Dict) -> Reward:
         feedback_parts.append("Some fix suggestions were syntactically valid.")
 
     return Reward(
-        score=round(score, 4),
+        score=round(max(0.001, min(0.999, score)), 4),
         breakdown=breakdown,
         feedback=" ".join(feedback_parts),
     )

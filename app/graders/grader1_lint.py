@@ -63,7 +63,7 @@ def grade_lint(action: Action, task: Dict) -> Reward:
         true_positives = len(agent_lines & pylint_lines)
         recall = true_positives / len(pylint_lines)
     else:
-        recall = 1.0  # no issues to find, full recall
+        recall = 0.5  # no issues to find, neutral recall
 
     # F1 score as base
     if precision + recall > 0:
@@ -111,7 +111,7 @@ def grade_lint(action: Action, task: Dict) -> Reward:
         feedback_parts.append("Good job identifying lint issues.")
 
     return Reward(
-        score=round(score, 4),
+        score=round(max(0.001, min(0.999, score)), 4),
         breakdown=breakdown,
         feedback=" ".join(feedback_parts),
     )

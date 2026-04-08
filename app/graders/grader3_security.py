@@ -137,7 +137,7 @@ def grade_security(action: Action, task: Dict) -> Reward:
         feedback_parts.append("Severity ratings were mostly accurate.")
 
     return Reward(
-        score=round(score, 4),
+        score=round(max(0.001, min(0.999, score)), 4),
         breakdown=breakdown,
         feedback=" ".join(feedback_parts),
     )

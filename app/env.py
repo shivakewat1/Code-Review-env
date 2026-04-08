@@ -54,7 +54,7 @@ class CodeReviewEnv:
 
         done = (
             self._state["step_count"] >= MAX_STEPS
-            or reward.score >= 0.9  # early termination on near-perfect score
+            or reward.score >= 0.95  # early termination on near-perfect score
         )
         self._state["done"] = done
 
