@@ -38,7 +38,7 @@ class CodeReviewEnv:
         """Process one agent action and return next observation + reward."""
         if self._state["done"]:
             obs = self._build_observation()
-            reward = Reward(score=0.0, breakdown={}, feedback="Episode already done.")
+            reward = Reward(score=0.001, breakdown={}, feedback="Episode already done.")
             return StepResponse(observation=obs, reward=reward, done=True, info={})
 
         task = self._state["task"]
