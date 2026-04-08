@@ -1,6 +1,7 @@
 name: code-review-env
 version: "1.0.0"
 description: "RL environment for training AI agents to perform code review"
+entry_point: "server.app:main"
 tasks:
   - name: lint-fix
     difficulty: easy
