@@ -1,4 +1,4 @@
-﻿[project]
+[project]
 name = "code-review-env"
 version = "1.0.0"
 description = "OpenEnv-compliant RL environment for AI code review agents"
