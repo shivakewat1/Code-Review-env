@@ -1,5 +1,6 @@
-﻿---
+---
 title: Code Review Env
+emoji: 🔍
 colorFrom: blue
 colorTo: purple
 sdk: docker
