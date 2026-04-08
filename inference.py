@@ -11,9 +11,9 @@ from openai import OpenAI
 
 load_dotenv()
 
-API_BASE_URL = os.getenv("API_BASE_URL", "https://router.huggingface.co/v1")
-MODEL_NAME = os.getenv("MODEL_NAME", "Qwen/Qwen2.5-72B-Instruct")
-HF_TOKEN = os.getenv("HF_TOKEN", "dummy-token")  # fallback avoids crash at import time
+API_BASE_URL = os.getenv("API_BASE_URL", "https://api-inference.huggingface.co/v1")
+MODEL_NAME = os.getenv("MODEL_NAME", "mistralai/Mistral-7B-Instruct-v0.2")
+HF_TOKEN = os.getenv("HF_TOKEN")
 ENV_BASE_URL = os.getenv("ENV_BASE_URL", "http://localhost:7860")
 
 MAX_STEPS = 8
@@ -38,8 +38,22 @@ Do not include any text outside the JSON object."""
 
 
 def get_client() -> OpenAI:
-    """Lazy-init OpenAI client so import never crashes."""
-    return OpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN)
+    """Create OpenAI-compatible client with full validation."""
+    try:
+        print(f"[DEBUG] BASE_URL={API_BASE_URL}", flush=True)
+        print(f"[DEBUG] TOKEN_EXISTS={HF_TOKEN is not None}", flush=True)
+        print(f"[DEBUG] MODEL={MODEL_NAME}", flush=True)
+
+        if not API_BASE_URL:
+            raise ValueError("API_BASE_URL is missing")
+        if not HF_TOKEN:
+            raise ValueError("HF_TOKEN is missing — set it as an environment variable")
+
+        return OpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN)
+
+    except Exception as e:
+        print(f"[ERROR] Failed to create OpenAI client: {e}", flush=True)
+        raise
 
 
 def call_env(method: str, path: str, payload: dict = None) -> dict:
@@ -77,13 +91,21 @@ def run_task(task_name: str) -> dict:
     total_steps = 0
     success = False
 
+    # Reset env
     try:
         obs = call_env("POST", f"/reset?task={task_name}")
     except Exception as e:
-        print(f"[END] success=false steps=0 score=0.00 rewards= error={str(e)[:120]}", flush=True)
+        err = str(e)[:120]
+        print(f"[END] success=false steps=0 score=0.00 rewards= error={err}", flush=True)
         return {"task": task_name, "success": False, "steps": 0, "score": 0.0, "rewards": []}
 
-    client = get_client()
+    # Init client — safe, per-task
+    try:
+        client = get_client()
+    except Exception as e:
+        err = str(e)[:120]
+        print(f"[END] success=false steps=0 score=0.00 rewards= error={err}", flush=True)
+        return {"task": task_name, "success": False, "steps": 0, "score": 0.0, "rewards": []}
 
     for step_num in range(1, MAX_STEPS + 1):
         user_prompt = build_user_prompt(obs)
