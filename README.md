@@ -1,7 +1,8 @@
----
+﻿---
 title: Code Review Env
 colorFrom: blue
 colorTo: purple
+emoji: 🔍
 sdk: docker
 pinned: false
 ---
@@ -21,14 +22,14 @@ pinned: false
 </p>
 
 <p align="center">
-  <a href="https://huggingface.co/spaces/shiva0999/code-review-env">HuggingFace Space</a> •
-  <a href="https://github.com/shivakewat1/Code-Review-env">GitHub</a> •
+  <a href="https://huggingface.co/spaces/shiva0999/code-review-env">HuggingFace Space</a> â€¢
+  <a href="https://github.com/shivakewat1/Code-Review-env">GitHub</a> â€¢
   <a href="https://shiva0999-code-review-env.hf.space/docs">Live API Docs</a>
 </p>
 
 ---
 
-## 👥 Team — Terminal Agents
+## ðŸ‘¥ Team â€” Terminal Agents
 
 | Name | Role |
 |---|---|
@@ -38,25 +39,25 @@ pinned: false
 
 ---
 
-## 🧠 What is this?
+## ðŸ§  What is this?
 
-An AI agent is given real Python source files and must act as a code reviewer — identifying bugs, lint violations, and security vulnerabilities. For every action the agent takes, it receives a structured reward signal between `0.0` and `1.0`.
+An AI agent is given real Python source files and must act as a code reviewer â€” identifying bugs, lint violations, and security vulnerabilities. For every action the agent takes, it receives a structured reward signal between `0.0` and `1.0`.
 
 The environment is fully OpenEnv-compliant with a REST API, deterministic graders, and three progressively harder tasks.
 
 ```
 Agent receives Python code
-        ↓
+        â†“
 Agent identifies issues (line, type, severity, fix)
-        ↓
+        â†“
 Grader evaluates: location accuracy + explanation + fix validity
-        ↓
-Reward score returned (0.0 – 1.0)
+        â†“
+Reward score returned (0.0 â€“ 1.0)
 ```
 
 ---
 
-## 🔗 Links
+## ðŸ”— Links
 
 | Resource | URL |
 |---|---|
@@ -67,21 +68,21 @@ Reward score returned (0.0 – 1.0)
 
 ---
 
-## 🎯 Tasks
+## ðŸŽ¯ Tasks
 
-### Task 1 — lint-fix `[Easy]`
+### Task 1 â€” lint-fix `[Easy]`
 - **Input:** Python file with unused imports, bad naming (camelCase, non-CapWords), missing docstrings, spacing violations
 - **Agent must:** Return list of issues with line numbers, types, and fix suggestions
 - **Grader:** Runs `pylint`, computes precision/recall F1 against real pylint output
 - **Baseline score:** `0.72`
 
-### Task 2 — bug-detect `[Medium]`
-- **Input:** Python file with 4 subtle logical bugs — off-by-one errors, wrong operators (`=+` vs `+=`), float division used as index, index out of bounds
+### Task 2 â€” bug-detect `[Medium]`
+- **Input:** Python file with 4 subtle logical bugs â€” off-by-one errors, wrong operators (`=+` vs `+=`), float division used as index, index out of bounds
 - **Agent must:** Identify exact line, explain the bug, suggest corrected code
 - **Grader:** AST-verified line matching + keyword-based explanation check + syntax validation of fix
 - **Baseline score:** `0.54`
 
-### Task 3 — security-audit `[Hard]`
+### Task 3 â€” security-audit `[Hard]`
 - **Input:** Flask web app with SQL injection, hardcoded API keys, unsafe `eval()`, command injection via `os.system()`, path traversal
 - **Agent must:** List all vulnerabilities with severity (`low/medium/high/critical`) and secure fix
 - **Grader:** `bandit` static analysis + ground-truth cross-reference + severity tolerance check
@@ -89,7 +90,7 @@ Reward score returned (0.0 – 1.0)
 
 ---
 
-## 🏆 Reward Function
+## ðŸ† Reward Function
 
 | Event | Score Delta |
 |---|---|
@@ -102,7 +103,7 @@ Reward score returned (0.0 – 1.0)
 
 ---
 
-## 📡 API Endpoints
+## ðŸ“¡ API Endpoints
 
 | Method | Endpoint | Description |
 |---|---|---|
@@ -150,7 +151,7 @@ curl -X POST "https://shiva0999-code-review-env.hf.space/step" \
 
 ---
 
-## 🗂️ Observation & Action Space
+## ðŸ—‚ï¸ Observation & Action Space
 
 ### Observation
 ```python
@@ -178,7 +179,7 @@ class Issue(BaseModel):
 
 ---
 
-## 🛠️ Tech Stack
+## ðŸ› ï¸ Tech Stack
 
 | Component | Technology |
 |---|---|
@@ -194,7 +195,7 @@ class Issue(BaseModel):
 
 ---
 
-## 🚀 Run Locally
+## ðŸš€ Run Locally
 
 ```bash
 git clone https://github.com/shivakewat1/Code-Review-env
@@ -207,7 +208,7 @@ Open http://localhost:7860/docs for the Swagger UI.
 
 ---
 
-## 🐳 Run with Docker
+## ðŸ³ Run with Docker
 
 ```bash
 docker build -t code-review-env .
@@ -216,7 +217,7 @@ docker run -p 7860:7860 code-review-env
 
 ---
 
-## 🤖 Run Inference (LLM Agent)
+## ðŸ¤– Run Inference (LLM Agent)
 
 ```bash
 set HF_TOKEN=your_hf_token_here
@@ -238,7 +239,7 @@ Expected output format:
 
 ---
 
-## 📊 Baseline Results
+## ðŸ“Š Baseline Results
 
 | Task | Difficulty | Model | Score | Steps |
 |---|---|---|---|---|
@@ -248,42 +249,43 @@ Expected output format:
 
 ---
 
-## ⚙️ Environment Constraints
+## âš™ï¸ Environment Constraints
 
 - Runs on 2 vCPU, 8GB RAM
 - All graders are fully deterministic (no randomness)
 - Scores always in `[0.0, 1.0]`
 - `reset()` always returns a clean state
-- All task code samples are hardcoded — no external APIs needed for the environment itself
+- All task code samples are hardcoded â€” no external APIs needed for the environment itself
 - Max 8 steps per task, total inference runtime under 20 minutes
 
 ---
 
-## 📁 Project Structure
+## ðŸ“ Project Structure
 
 ```
 code-review-env/
-├── Dockerfile
-├── openenv.yaml
-├── pyproject.toml
-├── requirements.txt
-├── inference.py
-├── server/
-│   └── app.py          # OpenEnv entry point with main()
-└── app/
-    ├── main.py         # FastAPI routes
-    ├── env.py          # Core RL environment logic
-    ├── models.py       # Pydantic models
-    ├── tasks/
-    │   ├── task1_lint.py
-    │   ├── task2_bugdetect.py
-    │   └── task3_security.py
-    └── graders/
-        ├── grader1_lint.py
-        ├── grader2_bug.py
-        └── grader3_security.py
+â”œâ”€â”€ Dockerfile
+â”œâ”€â”€ openenv.yaml
+â”œâ”€â”€ pyproject.toml
+â”œâ”€â”€ requirements.txt
+â”œâ”€â”€ inference.py
+â”œâ”€â”€ server/
+â”‚   â””â”€â”€ app.py          # OpenEnv entry point with main()
+â””â”€â”€ app/
+    â”œâ”€â”€ main.py         # FastAPI routes
+    â”œâ”€â”€ env.py          # Core RL environment logic
+    â”œâ”€â”€ models.py       # Pydantic models
+    â”œâ”€â”€ tasks/
+    â”‚   â”œâ”€â”€ task1_lint.py
+    â”‚   â”œâ”€â”€ task2_bugdetect.py
+    â”‚   â””â”€â”€ task3_security.py
+    â””â”€â”€ graders/
+        â”œâ”€â”€ grader1_lint.py
+        â”œâ”€â”€ grader2_bug.py
+        â””â”€â”€ grader3_security.py
 ```
 
 ---
 
 <p align="center">Built with dedication by <strong>Team Terminal Agents</strong> for the Scaler x HuggingFace OpenEnv Hackathon</p>
+
