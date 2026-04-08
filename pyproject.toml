@@ -1,0 +1,9 @@
+﻿[project]
+name = "code-review-env"
+version = "1.0.0"
+description = "OpenEnv-compliant RL environment for AI code review agents"
+requires-python = ">=3.11"
+
+[tool.openenv]
+name = "code-review-env"
+version = "1.0.0"
