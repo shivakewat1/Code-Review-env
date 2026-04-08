@@ -11,4 +11,4 @@ tasks:
     difficulty: hard
 observation_space: "Structured Python code with task description"
 action_space: "List of identified issues with line numbers, types, and suggestions"
-reward_range: [0.0, 1.0]
+reward_range: [0.001, 0.999]
